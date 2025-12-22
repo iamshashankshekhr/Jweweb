@@ -1,16 +1,21 @@
-
 import React, { useState, useEffect } from 'react';
-import { Typography, Carousel, Row, Col } from 'antd';
+import { Typography, Carousel, Row, Col, Grid } from 'antd';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import ProductCard from '../components/ProductCard';
 
 const { Title, Paragraph } = Typography;
+const { useBreakpoint } = Grid;
 
 const Home = () => {
     const [posters, setPosters] = useState([]);
     const [bestCollection, setBestCollection] = useState([]);
     const [loading, setLoading] = useState(true);
+    const screens = useBreakpoint();
+
+    // Responsive styles
+    const carouselHeight = screens.md ? '600px' : '350px';
+    const sectionPadding = screens.md ? '80px 50px' : '40px 20px';
 
     useEffect(() => {
         const fetchData = async () => {
@@ -54,14 +59,14 @@ const Home = () => {
         <div style={{ minHeight: '80vh' }}>
             {/* Hero Section with Carousel */}
             {posters.length > 0 ? (
-                <Carousel autoplay autoplaySpeed={5000} infinite={true} style={{ height: '600px' }}>
+                <Carousel autoplay autoplaySpeed={5000} infinite={true} style={{ height: carouselHeight }}>
                     {posters.map((poster) => (
                         <div key={poster.id}>
                             {poster.target_link ? (
                                 <Link to={poster.target_link}>
                                     <div style={{
                                         background: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("${poster.image}")`,
-                                        height: '600px',
+                                        height: carouselHeight,
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
                                         display: 'flex',
@@ -77,7 +82,7 @@ const Home = () => {
                             ) : (
                                 <div style={{
                                     background: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("${poster.image}")`,
-                                    height: '600px',
+                                    height: carouselHeight,
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
                                     display: 'flex',
@@ -96,7 +101,7 @@ const Home = () => {
                 // Default Hero if no posters
                 <div style={{
                     background: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("${defaultHero.image}")`,
-                    height: '600px',
+                    height: carouselHeight,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     display: 'flex',
@@ -109,9 +114,9 @@ const Home = () => {
                 </div>
             )}
 
-            <div style={{ padding: '80px 50px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ padding: sectionPadding, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Title level={2} style={{ fontFamily: "'Playfair Display', serif", color: '#333', marginBottom: '10px' }}>Our Best Collection</Title>
-                <Paragraph style={{ marginBottom: '50px', fontSize: '18px', color: '#666' }}>Handpicked favorites just for you.</Paragraph>
+                <Paragraph style={{ marginBottom: '50px', fontSize: '18px', color: '#666', textAlign: 'center' }}>Handpicked favorites just for you.</Paragraph>
 
                 <Row gutter={[24, 24]} style={{ width: '100%', maxWidth: '1200px' }}>
                     {bestCollection.length > 0 ? (

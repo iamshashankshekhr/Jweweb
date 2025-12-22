@@ -1,13 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Row, Col, Typography, Select, Slider, Checkbox, Card, Divider } from 'antd';
+import { Row, Col, Typography, Select, Slider, Checkbox, Card, Divider, Drawer, Button, Grid } from 'antd';
+import { FilterOutlined } from '@ant-design/icons';
 import ProductCard from '../components/ProductCard';
 import { supabase } from '../supabaseClient';
 // import { products } from '../data/mockProducts'; // Mock data no longer used
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { useBreakpoint } = Grid;
 
 const Categories = () => {
     const [products, setProducts] = useState([]);
@@ -16,8 +17,10 @@ const Categories = () => {
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [priceRange, setPriceRange] = useState([0, 200000]);
     const [loading, setLoading] = useState(true);
+    const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
 
     const location = useLocation();
+    const screens = useBreakpoint();
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -74,8 +77,37 @@ const Categories = () => {
         setSelectedCategories(checkedValues);
     };
 
+    const FilterContent = () => (
+        <>
+            <Title level={5}>Categories</Title>
+            <Checkbox.Group
+                options={categories}
+                value={selectedCategories}
+                onChange={handleCategoryChange}
+                style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+            />
+
+            <Divider />
+
+            <Title level={5}>Price Range</Title>
+            <Slider
+                range
+                min={0}
+                max={200000}
+                defaultValue={[0, 200000]}
+                onChange={setPriceRange}
+                trackStyle={{ backgroundColor: 'var(--primary-gold)' }}
+                handleStyle={{ borderColor: 'var(--primary-gold)' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                <Text>₹{priceRange[0]}</Text>
+                <Text>₹{priceRange[1]}</Text>
+            </div>
+        </>
+    );
+
     return (
-        <div style={{ padding: '40px 50px', minHeight: '80vh' }}>
+        <div style={{ padding: screens.md ? '40px 50px' : '20px', minHeight: '80vh' }}>
             <div style={{ textAlign: 'center', marginBottom: '50px' }}>
                 <Title level={1} style={{ fontFamily: "'Playfair Display', serif", color: 'var(--luxury-black)' }}>
                     Our Collection
@@ -86,40 +118,27 @@ const Categories = () => {
             </div>
 
             <Row gutter={[40, 40]}>
-                {/* Sidebar Filters */}
-                <Col xs={24} md={6}>
-                    <Card title="Filters" bordered={false} style={{ height: '100%', boxShadow: 'none', background: 'transparent' }}>
-                        <Title level={5}>Categories</Title>
-                        <Checkbox.Group
-                            options={categories}
-                            value={selectedCategories}
-                            onChange={handleCategoryChange}
-                            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
-                        />
-
-                        <Divider />
-
-                        <Title level={5}>Price Range</Title>
-                        <Slider
-                            range
-                            min={0}
-                            max={200000}
-                            defaultValue={[0, 200000]}
-                            onChange={setPriceRange}
-                            trackStyle={{ backgroundColor: 'var(--primary-gold)' }}
-                            handleStyle={{ borderColor: 'var(--primary-gold)' }}
-                        />
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                            <Text>₹{priceRange[0]}</Text>
-                            <Text>₹{priceRange[1]}</Text>
-                        </div>
-                    </Card>
-                </Col>
+                {/* Desktop Sidebar Filters */}
+                {screens.md && (
+                    <Col xs={24} md={6}>
+                        <Card title="Filters" bordered={false} style={{ height: '100%', boxShadow: 'none', background: 'transparent' }}>
+                            <FilterContent />
+                        </Card>
+                    </Col>
+                )}
 
                 {/* Product Grid */}
-                <Col xs={24} md={18}>
-                    <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text>{filteredProducts.length} Products Found</Text>
+                <Col xs={24} md={18} style={{ width: '100%' }}>
+                    <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {!screens.md && (
+                                <Button icon={<FilterOutlined />} onClick={() => setFilterDrawerVisible(true)}>
+                                    Filter
+                                </Button>
+                            )}
+                            <Text>{filteredProducts.length} Products Found</Text>
+                        </div>
+
                         <Select defaultValue="price-low" style={{ width: 200 }} onChange={setSortOption}>
                             <Option value="price-low">Price: Low to High</Option>
                             <Option value="price-high">Price: High to Low</Option>
@@ -144,6 +163,16 @@ const Categories = () => {
                     </Row>
                 </Col>
             </Row>
+
+            {/* Mobile Filter Drawer */}
+            <Drawer
+                title="Filters"
+                placement="left"
+                onClose={() => setFilterDrawerVisible(false)}
+                open={filterDrawerVisible}
+            >
+                <FilterContent />
+            </Drawer>
         </div>
     );
 };
