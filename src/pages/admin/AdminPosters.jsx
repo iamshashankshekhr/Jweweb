@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { List, Card, Button, Modal, Form, Input, Upload, message, Switch, Typography } from 'antd';
-import { PlusOutlined, DeleteOutlined, UploadOutlined } from '@ant-design/icons';
+import { List, Card, Button, Modal, Form, Input, Upload, message, Switch, Typography, Select } from 'antd';
+import { PlusOutlined, DeleteOutlined, UploadOutlined, EditOutlined } from '@ant-design/icons';
 import { supabase } from '../../supabaseClient';
 
 const { Meta } = Card;
@@ -13,6 +13,9 @@ const AdminPosters = () => {
     const [uploading, setUploading] = useState(false);
     const [form] = Form.useForm();
 
+    const [editingPoster, setEditingPoster] = useState(null);
+    const [availableCategories, setAvailableCategories] = useState([]);
+
     const fetchPosters = async () => {
         setLoading(true);
         const { data, error } = await supabase.from('posters').select('*').order('created_at', { ascending: false });
@@ -21,8 +24,17 @@ const AdminPosters = () => {
         setLoading(false);
     };
 
+    const fetchCategories = async () => {
+        const { data, error } = await supabase.from('products').select('category');
+        if (!error && data) {
+            const uniqueCats = [...new Set(data.map(item => item.category))];
+            setAvailableCategories(uniqueCats);
+        }
+    };
+
     useEffect(() => {
         fetchPosters();
+        fetchCategories();
     }, []);
 
     const handleDelete = async (id) => {
@@ -42,7 +54,23 @@ const AdminPosters = () => {
         else fetchPosters();
     };
 
-    const handleAdd = () => {
+    const handleEdit = (poster) => {
+        setEditingPoster(poster);
+        form.setFieldsValue({
+            title: poster.title,
+            target_link: poster.target_link,
+            image_url: poster.image
+        });
+        setIsModalVisible(true);
+    };
+
+    const handleModalCancel = () => {
+        setIsModalVisible(false);
+        setEditingPoster(null);
+        form.resetFields();
+    };
+
+    const handleSave = () => {
         form.validateFields().then(async (values) => {
             setUploading(true);
             let imageUrl = values.image_url;
@@ -64,24 +92,40 @@ const AdminPosters = () => {
                 imageUrl = publicUrl;
             }
 
+            // If editing and no new image provided, keep old one
+            if (editingPoster && !imageUrl) {
+                imageUrl = editingPoster.image;
+            }
+
             if (!imageUrl) {
                 message.error('Please provide an image URL or upload a file');
                 setUploading(false);
                 return;
             }
 
-            const { error } = await supabase.from('posters').insert([{
-                title: values.title,
-                image: imageUrl,
-                active: true
-            }]);
+            let error;
+            if (editingPoster) {
+                const { error: updateError } = await supabase.from('posters').update({
+                    title: values.title,
+                    target_link: values.target_link,
+                    image: imageUrl
+                }).eq('id', editingPoster.id);
+                error = updateError;
+            } else {
+                const { error: insertError } = await supabase.from('posters').insert([{
+                    title: values.title,
+                    target_link: values.target_link,
+                    image: imageUrl,
+                    active: true
+                }]);
+                error = insertError;
+            }
 
             if (error) {
-                message.error('Failed to add poster');
+                message.error(editingPoster ? 'Failed to update poster' : 'Failed to add poster');
             } else {
-                message.success('Poster added');
-                setIsModalVisible(false);
-                form.resetFields();
+                message.success(editingPoster ? 'Poster updated' : 'Poster added');
+                handleModalCancel();
                 fetchPosters();
             }
             setUploading(false);
@@ -106,6 +150,7 @@ const AdminPosters = () => {
                         <Card
                             cover={<img alt={item.title} src={item.image} style={{ height: 200, objectFit: 'cover' }} />}
                             actions={[
+                                <EditOutlined key="edit" onClick={() => handleEdit(item)} />,
                                 <Switch
                                     checked={item.active}
                                     onChange={() => handleToggleActive(item.id, item.active)}
@@ -122,15 +167,31 @@ const AdminPosters = () => {
             />
 
             <Modal
-                title="Add New Poster"
+                title={editingPoster ? "Edit Poster" : "Add New Poster"}
                 open={isModalVisible}
-                onOk={handleAdd}
-                onCancel={() => setIsModalVisible(false)}
+                onOk={handleSave}
+                onCancel={handleModalCancel}
                 confirmLoading={uploading}
             >
                 <Form form={form} layout="vertical">
                     <Form.Item name="title" label="Title (Optional)">
                         <Input />
+                    </Form.Item>
+                    <Form.Item name="target_link" label="Target Link (Select Destination)">
+                        <Select placeholder="Select a page or category" allowClear showSearch>
+                            <Select.OptGroup label="Pages">
+                                <Select.Option value="/">Home Page</Select.Option>
+                                <Select.Option value="/categories">All Products (Shop)</Select.Option>
+                                <Select.Option value="/profile">User Profile</Select.Option>
+                            </Select.OptGroup>
+                            <Select.OptGroup label="Shop Collections">
+                                {availableCategories.map(cat => (
+                                    <Select.Option key={cat} value={`/categories?category=${encodeURIComponent(cat)}`}>
+                                        {cat} Collection
+                                    </Select.Option>
+                                ))}
+                            </Select.OptGroup>
+                        </Select>
                     </Form.Item>
                     <Form.Item name="image_url" label="Image URL (Optional)">
                         <Input placeholder="Or upload below" />

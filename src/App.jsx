@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Configure the theme
 const themeConfig = {
@@ -36,6 +37,7 @@ import { CartProvider } from './context/CartContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Categories from './pages/Categories';
+import TryAtHome from './pages/TryAtHome';
 
 // ... (imports remain)
 
@@ -64,7 +66,7 @@ function App() {
               }>
                 <Route index element={<Home />} />
                 <Route path="categories" element={<Categories />} />
-                <Route path="try-at-home" element={<div style={{ padding: 50, textAlign: 'center' }}>Try at Home Page (Coming Soon)</div>} />
+                <Route path="try-at-home" element={<TryAtHome />} />
                 <Route path="login" element={<Login />} />
                 <Route path="signup" element={<Signup />} />
                 <Route path="profile" element={<Profile />} />
@@ -72,7 +74,11 @@ function App() {
               </Route>
 
               {/* Admin Routes */}
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route path="/admin" element={
+                <ErrorBoundary>
+                  <AdminLayout />
+                </ErrorBoundary>
+              }>
                 <Route index element={<div style={{ padding: 20 }}><h3>Welcome to Admin Dashboard</h3><p>Select an option from the sidebar to manage your shop.</p></div>} />
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="posters" element={<AdminPosters />} />

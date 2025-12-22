@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Button, Typography, Rate, Badge, message } from 'antd';
-import { HeartOutlined, HeartFilled, ShoppingCartOutlined } from '@ant-design/icons';
+import { HeartOutlined, HeartFilled, ShoppingCartOutlined, ShareAltOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
@@ -17,6 +17,27 @@ const ProductCard = ({ product }) => {
         e.stopPropagation();
         addToCart(product);
         message.success(`Added ${product.name} to cart!`);
+    };
+
+    const handleShare = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const shareData = {
+            title: product.name,
+            text: `Check out this ${product.name} on Jewelry Shop!`,
+            url: `${window.location.origin}/product/${product.id}`,
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(shareData.url);
+                message.success('Link copied to clipboard!');
+            }
+        } catch (err) {
+            console.error('Error sharing:', err);
+        }
     };
 
     return (
@@ -61,6 +82,21 @@ const ProductCard = ({ product }) => {
                             e.preventDefault();
                             setIsWishlisted(!isWishlisted);
                         }}
+                    />
+                    {/* Share Button Overlay */}
+                    <Button
+                        shape="circle"
+                        icon={<ShareAltOutlined />}
+                        style={{
+                            position: 'absolute',
+                            top: '50px',
+                            right: '10px',
+                            opacity: isHovered ? 1 : 0,
+                            transition: 'opacity 0.3s ease',
+                            border: 'none',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                        }}
+                        onClick={handleShare}
                     />
                 </div>
             }

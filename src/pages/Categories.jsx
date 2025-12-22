@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Row, Col, Typography, Select, Slider, Checkbox, Card, Divider } from 'antd';
 import ProductCard from '../components/ProductCard';
 import { supabase } from '../supabaseClient';
@@ -16,6 +17,8 @@ const Categories = () => {
     const [priceRange, setPriceRange] = useState([0, 200000]);
     const [loading, setLoading] = useState(true);
 
+    const location = useLocation();
+
     const fetchProducts = async () => {
         setLoading(true);
         const { data, error } = await supabase.from('products').select('*');
@@ -31,6 +34,15 @@ const Categories = () => {
     useEffect(() => {
         fetchProducts();
     }, []);
+
+    // Handle URL query params for initial filtering
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const categoryParam = params.get('category');
+        if (categoryParam) {
+            setSelectedCategories([categoryParam]);
+        }
+    }, [location.search]);
 
     // Derived unique categories based on fetched products
     const categories = [...new Set(products.map(p => p.category))];
@@ -78,7 +90,12 @@ const Categories = () => {
                 <Col xs={24} md={6}>
                     <Card title="Filters" bordered={false} style={{ height: '100%', boxShadow: 'none', background: 'transparent' }}>
                         <Title level={5}>Categories</Title>
-                        <Checkbox.Group options={categories} onChange={handleCategoryChange} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} />
+                        <Checkbox.Group
+                            options={categories}
+                            value={selectedCategories}
+                            onChange={handleCategoryChange}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+                        />
 
                         <Divider />
 

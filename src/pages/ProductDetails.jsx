@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Row, Col, Typography, Button, Divider, Rate, Tag, Breadcrumb, message } from 'antd';
-import { ShoppingCartOutlined, HeartOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { ShoppingCartOutlined, HeartOutlined, ArrowLeftOutlined, ShareAltOutlined } from '@ant-design/icons';
 import { supabase } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
 
@@ -41,6 +41,25 @@ const ProductDetails = () => {
     const handleAddToCart = () => {
         addToCart(product);
         message.success(`Added ${product.name} to cart!`);
+    };
+
+    const handleShare = async () => {
+        const shareData = {
+            title: product.name,
+            text: `Check out this ${product.name} on Jewelry Shop!`,
+            url: window.location.href,
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(shareData.url);
+                message.success('Link copied to clipboard!');
+            }
+        } catch (err) {
+            console.error('Error sharing:', err);
+        }
     };
 
     if (loading) return <div style={{ padding: '50px', textAlign: 'center' }}>Loading details...</div>;
@@ -124,6 +143,17 @@ const ProductDetails = () => {
                             }}
                         >
                             Wishlist
+                        </Button>
+                        <Button
+                            size="large"
+                            icon={<ShareAltOutlined />}
+                            onClick={handleShare}
+                            style={{
+                                height: '50px',
+                                fontSize: '16px'
+                            }}
+                        >
+                            Share
                         </Button>
                     </div>
 

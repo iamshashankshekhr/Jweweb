@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, InputNumber, Select, message, Upload } from 'antd';
+import { Table, Button, Modal, Form, Input, InputNumber, Select, message, Upload, Switch } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
 import { supabase } from '../../supabaseClient';
 
@@ -49,22 +49,29 @@ const AdminProducts = () => {
 
             // Handle Image Upload Logic if it's a file object (this example assumes direct URL or handled elsewhere for simplicity first)
             // Ideally we upload to bucket here. Let's implementing basic upload if a file is present.
-            if (values.upload && values.upload[0]) {
-                const file = values.upload[0].originFileObj;
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Math.random()}.${fileExt}`;
-                const filePath = `products/${fileName}`;
+            if (values.upload && values.upload.length > 0 && values.upload[0].originFileObj) {
+                try {
+                    const file = values.upload[0].originFileObj;
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Math.random()}.${fileExt}`;
+                    const filePath = `products/${fileName}`;
 
-                const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+                    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
 
-                if (uploadError) {
-                    message.error('Image upload failed');
+                    if (uploadError) {
+                        message.error('Image upload failed: ' + uploadError.message);
+                        setUploading(false);
+                        return;
+                    }
+
+                    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+                    imageUrl = publicUrl;
+                } catch (err) {
+                    console.error("Upload crash safe guard:", err);
+                    message.error("Unexpected error during file upload");
                     setUploading(false);
                     return;
                 }
-
-                const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-                imageUrl = publicUrl;
             }
 
             const productData = {
@@ -73,7 +80,8 @@ const AdminProducts = () => {
                 category: values.category,
                 description: values.description,
                 image: imageUrl, // or values.image_url if manually entered
-                stock: values.stock
+                stock: values.stock,
+                is_best_collection: values.is_best_collection || false
             };
 
             let error;
@@ -166,6 +174,9 @@ const AdminProducts = () => {
                         <Upload beforeUpload={() => false} maxCount={1} listType="picture">
                             <Button icon={<UploadOutlined />}>Select File</Button>
                         </Upload>
+                    </Form.Item>
+                    <Form.Item name="is_best_collection" label="Show in Best Collection" valuePropName="checked">
+                        <Switch checkedChildren="Yes" unCheckedChildren="No" />
                     </Form.Item>
                 </Form>
             </Modal>
