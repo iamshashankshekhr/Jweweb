@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Row, Col, Typography, Button, Divider, Rate, Tag, Breadcrumb, message } from 'antd';
-import { ShoppingCartOutlined, HeartOutlined, ArrowLeftOutlined, ShareAltOutlined } from '@ant-design/icons';
+import { ShoppingCartOutlined, HeartOutlined, HeartFilled, ArrowLeftOutlined, ShareAltOutlined } from '@ant-design/icons';
 import { supabase } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -12,6 +13,7 @@ const ProductDetails = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const { addToCart } = useCart();
+    const { isInWishlist, toggleWishlist } = useWishlist();
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -136,13 +138,17 @@ const ProductDetails = () => {
                         </Button>
                         <Button
                             size="large"
-                            icon={<HeartOutlined />}
+                            icon={product && isInWishlist(product.id) ? <HeartFilled style={{ color: '#ff4d4f' }} /> : <HeartOutlined />}
                             style={{
                                 height: '50px',
                                 fontSize: '16px'
                             }}
+                            onClick={() => {
+                                const added = toggleWishlist(product);
+                                message.success(added ? `Added ${product.name} to wishlist!` : `Removed ${product.name} from wishlist`);
+                            }}
                         >
-                            Wishlist
+                            {product && isInWishlist(product.id) ? 'Wishlisted' : 'Wishlist'}
                         </Button>
                         <Button
                             size="large"

@@ -4,6 +4,8 @@ import { SearchOutlined, HeartOutlined, ShoppingCartOutlined, UserOutlined, Logo
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useShopSettings } from '../context/ShopSettingsContext';
 import CartDrawer from './CartDrawer';
 
 const { Header } = Layout;
@@ -12,6 +14,8 @@ const { useBreakpoint } = Grid;
 const Navbar = () => {
     const { user, signOut } = useAuth();
     const { getCartCount } = useCart();
+    const { wishlistItems } = useWishlist();
+    const { settings } = useShopSettings();
     const navigate = useNavigate();
     const [cartOpen, setCartOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -91,7 +95,7 @@ const Navbar = () => {
                             fontWeight: 700,
                             letterSpacing: '1px'
                         }}>
-                            Jewelry Shop
+                            {settings.shopName}
                         </h1>
                     </Link>
                 </div>
@@ -116,8 +120,8 @@ const Navbar = () => {
                         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                             <SearchBar />
 
-                            <Badge count={0} showZero color="#D4AF37">
-                                <Button type="text" icon={<HeartOutlined style={{ fontSize: '20px', color: 'var(--luxury-black)' }} />} />
+                            <Badge count={wishlistItems.length} color="#ff4d4f">
+                                <Button type="text" icon={<HeartOutlined style={{ fontSize: '20px', color: 'var(--luxury-black)' }} />} onClick={() => navigate('/wishlist')} />
                             </Badge>
 
                             <CartButton />

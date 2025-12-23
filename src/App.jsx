@@ -34,6 +34,8 @@ const themeConfig = {
 
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
+import { ShopSettingsProvider } from './context/ShopSettingsContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Categories from './pages/Categories';
@@ -46,47 +48,57 @@ import AdminProducts from './pages/admin/AdminProducts';
 import AdminPosters from './pages/admin/AdminPosters';
 import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
+import Payment from './pages/Payment';
+import Wishlist from './pages/Wishlist';
+import AdminSettings from './pages/admin/AdminSettings';
 
 function App() {
   return (
     <ConfigProvider theme={themeConfig}>
-      <AuthProvider>
-        <CartProvider>
-          <Router>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={
-                <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'linear-gradient(135deg, #FAF9F6 0%, #F5F1E6 100%)' }}>
-                  <Navbar />
-                  <main style={{ flex: 1 }}>
-                    <Outlet />
-                  </main>
-                  <Footer />
-                </div>
-              }>
-                <Route index element={<Home />} />
-                <Route path="categories" element={<Categories />} />
-                <Route path="try-at-home" element={<TryAtHome />} />
-                <Route path="login" element={<Login />} />
-                <Route path="signup" element={<Signup />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="product/:id" element={<ProductDetails />} />
-              </Route>
+      <ShopSettingsProvider>
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <Router>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={
+                    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'linear-gradient(135deg, #FAF9F6 0%, #F5F1E6 100%)' }}>
+                      <Navbar />
+                      <main style={{ flex: 1 }}>
+                        <Outlet />
+                      </main>
+                      <Footer />
+                    </div>
+                  }>
+                    <Route index element={<Home />} />
+                    <Route path="categories" element={<Categories />} />
+                    <Route path="try-at-home" element={<TryAtHome />} />
+                    <Route path="login" element={<Login />} />
+                    <Route path="signup" element={<Signup />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="product/:id" element={<ProductDetails />} />
+                    <Route path="payment" element={<Payment />} />
+                    <Route path="wishlist" element={<Wishlist />} />
+                  </Route>
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={
-                <ErrorBoundary>
-                  <AdminLayout />
-                </ErrorBoundary>
-              }>
-                <Route index element={<div style={{ padding: 20 }}><h3>Welcome to Admin Dashboard</h3><p>Select an option from the sidebar to manage your shop.</p></div>} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="posters" element={<AdminPosters />} />
-              </Route>
-            </Routes>
-          </Router>
-        </CartProvider>
-      </AuthProvider>
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={
+                    <ErrorBoundary>
+                      <AdminLayout />
+                    </ErrorBoundary>
+                  }>
+                    <Route index element={<div style={{ padding: 20 }}><h3>Welcome to Admin Dashboard</h3><p>Select an option from the sidebar to manage your shop.</p></div>} />
+                    <Route path="products" element={<AdminProducts />} />
+                    <Route path="posters" element={<AdminPosters />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                  </Route>
+                </Routes>
+              </Router>
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
+      </ShopSettingsProvider>
     </ConfigProvider>
   );
 }

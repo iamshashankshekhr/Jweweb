@@ -1,14 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, Avatar, Button, Upload, message, Typography, Divider, Modal, Form, Input } from 'antd';
-import { UserOutlined, UploadOutlined, EditOutlined } from '@ant-design/icons';
+import { Card, Avatar, Button, Upload, message, Typography, Divider, Modal, Form, Input, List, Empty } from 'antd';
+import { UserOutlined, UploadOutlined, EditOutlined, HeartFilled, DeleteOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 import { supabase } from '../supabaseClient';
+import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
 const Profile = () => {
     const { user } = useAuth();
+    const { wishlistItems, removeFromWishlist } = useWishlist();
+    const { addToCart } = useCart();
     const [loading, setLoading] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState(user?.user_metadata?.avatar_url || null);
 
@@ -161,6 +166,71 @@ const Profile = () => {
                     <Text type="secondary" style={{ display: 'block', marginTop: 20 }}>Address</Text>
                     <Title level={5} style={{ marginTop: 5 }}>{userDetails.address || <Text type="secondary" italic>Not set</Text>}</Title>
                 </div>
+            </Card>
+
+            {/* Wishlist Section */}
+            <Card style={{ marginTop: 30, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <Title level={3} style={{ fontFamily: "'Playfair Display', serif", margin: 0 }}>
+                        <HeartFilled style={{ color: '#ff4d4f', marginRight: 10 }} />
+                        My Wishlist
+                    </Title>
+                    <Text type="secondary">{wishlistItems.length} items</Text>
+                </div>
+
+                {wishlistItems.length === 0 ? (
+                    <Empty description="Your wishlist is empty">
+                        <Link to="/categories">
+                            <Button type="primary">Start Shopping</Button>
+                        </Link>
+                    </Empty>
+                ) : (
+                    <List
+                        itemLayout="horizontal"
+                        dataSource={wishlistItems}
+                        renderItem={(item) => (
+                            <List.Item
+                                actions={[
+                                    <Button
+                                        type="primary"
+                                        icon={<ShoppingCartOutlined />}
+                                        onClick={() => {
+                                            addToCart(item);
+                                            message.success(`Added ${item.name} to cart!`);
+                                        }}
+                                    >
+                                        Add to Cart
+                                    </Button>,
+                                    <Button
+                                        type="text"
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        onClick={() => {
+                                            removeFromWishlist(item.id);
+                                            message.success(`Removed ${item.name} from wishlist`);
+                                        }}
+                                    />
+                                ]}
+                            >
+                                <List.Item.Meta
+                                    avatar={
+                                        <img
+                                            src={item.image || 'https://via.placeholder.com/60'}
+                                            alt={item.name}
+                                            style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '4px' }}
+                                        />
+                                    }
+                                    title={<Link to={`/product/${item.id}`}>{item.name}</Link>}
+                                    description={
+                                        <Text strong style={{ color: 'var(--primary-gold)' }}>
+                                            ₹{item.price?.toLocaleString('en-IN')}
+                                        </Text>
+                                    }
+                                />
+                            </List.Item>
+                        )}
+                    />
+                )}
             </Card>
 
             <Modal

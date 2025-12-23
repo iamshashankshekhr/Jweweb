@@ -3,12 +3,13 @@ import React from 'react';
 import { Drawer, List, Button, Typography, InputNumber, Empty, Divider } from 'antd';
 import { DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { useCart } from '../context/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
 const CartDrawer = ({ open, onClose }) => {
     const { cartItems, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
+    const navigate = useNavigate();
 
     return (
         <Drawer
@@ -31,7 +32,7 @@ const CartDrawer = ({ open, onClose }) => {
                                 ₹{getCartTotal().toLocaleString('en-IN')}
                             </Title>
                         </div>
-                        <Button type="primary" block size="large" style={{ marginBottom: '10px' }}>
+                        <Button type="primary" block size="large" style={{ marginBottom: '10px' }} onClick={() => { onClose(); navigate('/payment'); }}>
                             Proceed to Checkout
                         </Button>
                         <Button block onClick={clearCart}>

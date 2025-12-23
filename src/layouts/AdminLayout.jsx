@@ -6,7 +6,8 @@ import {
     ShopOutlined,
     FileImageOutlined,
     LogoutOutlined,
-    ArrowLeftOutlined
+    ArrowLeftOutlined,
+    SettingOutlined
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -34,6 +35,7 @@ const AdminLayout = () => {
     const getPageTitle = () => {
         if (location.pathname.includes('products')) return 'Product Management';
         if (location.pathname.includes('posters')) return 'Poster Management';
+        if (location.pathname.includes('settings')) return 'Shop Settings';
         return 'Admin Dashboard';
     };
 
@@ -63,6 +65,11 @@ const AdminLayout = () => {
                             key: '/admin/posters',
                             icon: <FileImageOutlined />,
                             label: <Link to="/admin/posters">Posters</Link>
+                        },
+                        {
+                            key: '/admin/settings',
+                            icon: <SettingOutlined />,
+                            label: <Link to="/admin/settings">Settings</Link>
                         },
                     ]}
                 />

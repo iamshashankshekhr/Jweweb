@@ -3,14 +3,16 @@ import { Card, Button, Typography, Rate, Badge, message } from 'antd';
 import { HeartOutlined, HeartFilled, ShoppingCartOutlined, ShareAltOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 const { Meta } = Card;
 const { Text, Title } = Typography;
 
 const ProductCard = ({ product }) => {
     const [isHovered, setIsHovered] = useState(false);
-    const [isWishlisted, setIsWishlisted] = useState(false);
     const { addToCart } = useCart();
+    const { isInWishlist, toggleWishlist } = useWishlist();
+    const isWishlisted = isInWishlist(product.id);
 
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -80,7 +82,9 @@ const ProductCard = ({ product }) => {
                         }}
                         onClick={(e) => {
                             e.preventDefault();
-                            setIsWishlisted(!isWishlisted);
+                            e.stopPropagation();
+                            const added = toggleWishlist(product);
+                            message.success(added ? `Added ${product.name} to wishlist!` : `Removed ${product.name} from wishlist`);
                         }}
                     />
                     {/* Share Button Overlay */}
