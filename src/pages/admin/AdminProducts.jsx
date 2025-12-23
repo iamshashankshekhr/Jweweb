@@ -94,8 +94,10 @@ const AdminProducts = () => {
             }
 
             if (error) {
+                console.error('Operation failed:', error);
                 message.error('Operation failed: ' + error.message);
             } else {
+                console.log('Product operation successful');
                 message.success(editingProduct ? 'Product updated' : 'Product added');
                 setIsModalVisible(false);
                 form.resetFields();

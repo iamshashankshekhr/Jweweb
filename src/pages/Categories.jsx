@@ -24,10 +24,13 @@ const Categories = () => {
 
     const fetchProducts = async () => {
         setLoading(true);
+        console.log('Fetching products from Supabase...');
         const { data, error } = await supabase.from('products').select('*');
         if (error) {
             console.error('Error fetching products:', error);
+            message.error('Error fetching products: ' + error.message);
         } else {
+            console.log('Products fetched successfully:', data);
             setProducts(data || []);
             setFilteredProducts(data || []);
         }
